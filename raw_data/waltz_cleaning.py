@@ -1,5 +1,13 @@
 import pandas as pd
 
+""" Waltz data cleaning script.
+
+This code does the following:
+    * remove all sequences not of length six
+    * remove overlap so that no two sequences have more than 3 amino acids in the same  
+    * add orthogonal vector representations of each sequence
+"""
+
 # Cleaning Parameters
 amino_acid_letters = pd.Series(list('ACDEFGHIKLMNPQRSTVWY'))    # Series of all amino acid abbreviations
 max_overlap = 3    # Maximum overlap between two sequences
@@ -15,7 +23,7 @@ input_seq_count = len(waltz_df.Sequence)
 waltz_df = waltz_df[waltz_df.Sequence.map(len) == max_seq_length]
 
 
-def overlap(seq1, seq2):
+def overlap(seq1, seq2) -> int:
     """ Count the number of overlapping amino acids """
     count = 0
     if len(seq1) > len(seq2):
