@@ -53,10 +53,11 @@ waltz_df.to_csv(target_filepath, sep=',', index=False)
 
 print(
     f'''
-    Waltz feature processing complete:
+    # Waltz feature processing complete:
+
     * input sequence count: {input_seq_count}
     * output sequence count: {len(waltz_df.index)}
     * amyloid count: {waltz_df.Amyloid.sum()}
-    * amyloid proportion: {100 * waltz_df.Amyloid.sum() / len(waltz_df.index):.2f}
+    * amyloid proportion: {100 * waltz_df.Amyloid.sum() / len(waltz_df.index):.2f}%
     '''
 )
