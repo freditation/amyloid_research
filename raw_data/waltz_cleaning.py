@@ -9,6 +9,7 @@ target_filepath = './waltz_features.csv'    # Output destination
 
 # Read data as dataframe
 waltz_df = pd.read_csv(source_filepath, sep='\t', header=0)
+input_seq_count = len(waltz_df.Sequence)
 
 # Only use sequences of length six
 waltz_df = waltz_df[waltz_df.Sequence.map(len) == max_seq_length]
@@ -49,3 +50,13 @@ for i in range(len(waltz_df)):
 
 # Write dataframe to csv
 waltz_df.to_csv(target_filepath, sep=',', index=False)
+
+print(
+    f'''
+    Waltz feature processing complete:
+    * input sequence count: {input_seq_count}
+    * output sequence count: {len(waltz_df.index)}
+    * amyloid count: {waltz_df.Amyloid.sum()}
+    * amyloid proportion: {100 * waltz_df.Amyloid.sum() / len(waltz_df.index):.2f}
+    '''
+)
