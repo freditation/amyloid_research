@@ -24,7 +24,7 @@ waltz_df = waltz_df[waltz_df.Sequence.map(len) == max_seq_length]
 
 
 def overlap(seq1, seq2) -> int:
-    """ Count the number of overlapping amino acids """
+    """ Return the number of overlapping amino acids """
     count = 0
     if len(seq1) > len(seq2):
         return overlap(seq2, seq1)
