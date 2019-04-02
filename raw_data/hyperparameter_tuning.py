@@ -1,7 +1,7 @@
 import pandas as pd
 import keras
 from keras import layers
-from keras.activations import relu, elu
+from keras.activations import relu, elu, tanh, linear
 import talos
 
 # Parameters
@@ -27,7 +27,7 @@ def waltz_model(x_train, y_train, x_target, y_target, params):
 
 
 params = {
-    'activation': [relu, elu],
+    'activation': [relu, elu, tanh, linear ],
     'first_neuron': [12, 24, 48],
     'optimizer': ['Nadam', 'Adam'],
     'losses': ['binary_crossentropy', 'logcosh'],
