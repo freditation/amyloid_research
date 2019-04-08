@@ -22,7 +22,6 @@ input_seq_count = len(waltz_df.Sequence)
 
 # 1 = amyloid, 0 = non-amyloid
 waltz_df.Amyloid = waltz_df.Amyloid.map(lambda x: 1 if x == '+' else 0)
-
 # Only use sequences of length six
 waltz_df = waltz_df[waltz_df.Sequence.map(len) == max_seq_length]
 
@@ -50,19 +49,13 @@ waltz_df_no_overlap = waltz_df_no_overlap.reset_index(drop=True)
 # Create orthogonal vectors for each amino acid
 amino_acids = pd.get_dummies(amino_acid_letters)
 
-for i in range(len(waltz_df)):
-    for j in range(len(waltz_df.loc[i, 'Sequence'])):
-        sequence = waltz_df.at[i, 'Sequence']
-        vector = amino_acids[sequence[j]]
-        for k in range(len(vector)):
-            waltz_df.loc[i, f'seq[{j}]_orth[{k}]'] = vector[k]
-
-for i in range(len(waltz_df_no_overlap)):
-    for j in range(len(waltz_df_no_overlap.loc[i, 'Sequence'])):
-        sequence = waltz_df_no_overlap.at[i, 'Sequence']
-        vector = amino_acids[sequence[j]]
-        for k in range(len(vector)):
-            waltz_df_no_overlap.loc[i, f'seq[{j}]_orth[{k}]'] = vector[k]
+for df in [waltz_df, waltz_df_no_overlap]:
+    for i in range(len(df)):
+        for j in range(len(df.loc[i, 'Sequence'])):
+            sequence = df.at[i, 'Sequence']
+            vector = amino_acids[sequence[j]]
+            for k in range(len(vector)):
+                df.loc[i, f'seq[{j}]_orth[{k}]'] = vector[k]
 
 # Write dataframes to csv
 waltz_df.to_csv(os.path.join(target_directory, 'waltz_features.csv'), sep=',', index=False)
