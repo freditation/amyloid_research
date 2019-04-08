@@ -2,6 +2,7 @@ import pandas as pd
 import keras
 from keras import layers
 from keras.activations import relu, elu, tanh, linear
+from sklearn.model_selection import train_test_split
 import talos
 
 # Parameters
@@ -10,10 +11,13 @@ source_filepath = './waltz_features.csv'    # Location of Waltz features
 # Read data as dataframe
 waltz_df = pd.read_csv(source_filepath, sep=',', header=0)
 
-x = waltz_df.drop(labels=['Sequence', 'Amyloid'], axis=1)
-y = waltz_df.Amyloid
+X = waltz_df.drop(labels=['Sequence', 'Amyloid'], axis=1)
+Y = waltz_df.Amyloid
 
-n_cols = x.shape[1]
+n_cols = X.shape[1]
+
+# Split data into training and test sets
+x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.2)
 
 
 def waltz_model(x_train, y_train, x_target, y_target, params):
@@ -27,13 +31,15 @@ def waltz_model(x_train, y_train, x_target, y_target, params):
 
 
 params = {
-    'activation': [relu, elu, tanh, linear ],
-    'first_neuron': [12, 24, 48],
-    'optimizer': ['Nadam', 'Adam'],
-    'losses': ['binary_crossentropy', 'logcosh'],
+    'activation': [relu, tanh, linear],
+    'first_neuron': [12, 24],
+    'optimizer': ['Adam'],
+    'losses': ['binary_crossentropy'],
     'hidden_layers': [0, 1, 2],
     'batch_size': [20, 30, 40],
-    'epochs': [10, 100, 200],
+    'epochs': [10, 100],
 }
 
-talos.Scan(x.values, y.values, model=waltz_model, params=params)
+scan = talos.Scan(x_train.values, y_train.values, model=waltz_model, params=params)
+
+scan.data.head()

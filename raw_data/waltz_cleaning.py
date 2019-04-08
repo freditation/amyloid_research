@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 
 """ Waltz data cleaning script.
@@ -13,11 +14,14 @@ amino_acid_letters = pd.Series(list('ACDEFGHIKLMNPQRSTVWY'))    # Series of all 
 max_overlap = 3    # Maximum overlap between two sequences
 max_seq_length = 6    # Maximum sequence length
 source_filepath = './waltz.csv'    # Location of original Waltz data
-target_filepath = './waltz_features.csv'    # Output destination
+target_directory = '.'    # Output destination
 
 # Read data as dataframe
 waltz_df = pd.read_csv(source_filepath, sep='\t', header=0)
 input_seq_count = len(waltz_df.Sequence)
+
+# 1 = amyloid, 0 = non-amyloid
+waltz_df.Amyloid = waltz_df.Amyloid.map(lambda x: 1 if x == '+' else 0)
 
 # Only use sequences of length six
 waltz_df = waltz_df[waltz_df.Sequence.map(len) == max_seq_length]
@@ -40,11 +44,8 @@ for seq in waltz_df.Sequence:
     matches = [overlap(seq, y) for y in distinct]
     if max(matches, default=0) <= max_overlap:
         distinct.append(seq)
-waltz_df = waltz_df[waltz_df.Sequence.isin(distinct)]
-waltz_df = waltz_df.reset_index(drop=True)
-
-# 1 = amyloid, 0 = non-amyloid
-waltz_df.Amyloid = waltz_df.Amyloid.map(lambda x: 1 if x == '+' else 0)
+waltz_df_no_overlap = waltz_df[waltz_df.Sequence.isin(distinct)]
+waltz_df_no_overlap = waltz_df_no_overlap.reset_index(drop=True)
 
 # Create orthogonal vectors for each amino acid
 amino_acids = pd.get_dummies(amino_acid_letters)
@@ -56,16 +57,26 @@ for i in range(len(waltz_df)):
         for k in range(len(vector)):
             waltz_df.loc[i, f'seq[{j}]_orth[{k}]'] = vector[k]
 
-# Write dataframe to csv
-waltz_df.to_csv(target_filepath, sep=',', index=False)
+for i in range(len(waltz_df_no_overlap)):
+    for j in range(len(waltz_df_no_overlap.loc[i, 'Sequence'])):
+        sequence = waltz_df_no_overlap.at[i, 'Sequence']
+        vector = amino_acids[sequence[j]]
+        for k in range(len(vector)):
+            waltz_df_no_overlap.loc[i, f'seq[{j}]_orth[{k}]'] = vector[k]
+
+# Write dataframes to csv
+waltz_df.to_csv(os.path.join(target_directory, 'waltz_features.csv'), sep=',', index=False)
+waltz_df_no_overlap.to_csv(os.path.join(target_directory, 'waltz_features_no_overlap.csv'), sep=',', index=False)
 
 print(
     f'''
     # Waltz feature processing complete:
 
-    * input sequence count: {input_seq_count}
-    * output sequence count: {len(waltz_df.index)}
+    * sequence count: {input_seq_count}
+    * non-overlapping sequence count: {len(waltz_df_no_overlap.index)}
     * amyloid count: {waltz_df.Amyloid.sum()}
-    * amyloid proportion: {100 * waltz_df.Amyloid.sum() / len(waltz_df.index):.2f}%
+    * non-overlapping amyloid count: {waltz_df_no_overlap.Amyloid.sum()}
+    * % amyloid: {100 * waltz_df.Amyloid.sum() / len(waltz_df.index):.2f}%
+    * % non-overlapping amyloid: {100 * waltz_df_no_overlap.Amyloid.sum() / len(waltz_df_no_overlap.index):.2f}%
     '''
 )
